@@ -5,16 +5,18 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
+ * RequestComment
+ *
  * @author Yibo Zhang
  * @date 2019/05/14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class RequestFavor extends HBaseBroadcast {
+public class RequestComment extends HBaseBroadcast {
 
     /**
-     *  点赞者的用户 id
+     * 评论者的用户 id
      */
-    private Integer favorUserId;
+    private Integer commentUserId;
 }

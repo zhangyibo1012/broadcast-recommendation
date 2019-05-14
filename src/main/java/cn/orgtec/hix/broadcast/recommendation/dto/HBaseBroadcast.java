@@ -1,6 +1,7 @@
 package cn.orgtec.hix.broadcast.recommendation.dto;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * HBaseBroadcast
@@ -9,6 +10,7 @@ import lombok.Data;
  * @date 2019/05/14
  */
 @Data
+@ToString
 public class HBaseBroadcast {
 
     /**

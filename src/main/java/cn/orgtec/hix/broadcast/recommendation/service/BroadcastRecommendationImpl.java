@@ -2,19 +2,26 @@ package cn.orgtec.hix.broadcast.recommendation.service;
 
 import cn.hutool.core.convert.Convert;
 import cn.orgtec.hix.broadcast.recommendation.dto.HBaseBroadcast;
+import cn.orgtec.hix.broadcast.recommendation.dto.RequestComment;
+import cn.orgtec.hix.broadcast.recommendation.dto.RequestFavor;
 import cn.orgtec.hix.broadcast.recommendation.util.HBaseConstant;
 import cn.orgtec.hix.broadcast.recommendation.util.HBaseUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
+ * rowKey 格式: HBase 表唯一标识  发布者 Id _ 操作者 Id : 广播 ID
+ *
  * @author Yibo Zhang
  * @date 2019/05/14
  */
 @Service
+@Slf4j
 public class BroadcastRecommendationImpl implements BroadcastRecommendation {
-
 
     @Override
     public Boolean saveHBaseBroadcast(HBaseBroadcast hBaseBroadcast) {
@@ -56,14 +63,85 @@ public class BroadcastRecommendationImpl implements BroadcastRecommendation {
     }
 
     @Override
-    public Boolean saveFavorHBaseIntimacy(HBaseBroadcast hBaseBroadcast) {
-        Long broadcastId = hBaseBroadcast.getBroadcastId();
-        Integer broadcastUserId = hBaseBroadcast.getBroadcastUserId();
+    public Boolean saveFavorHBaseIntimacy(RequestFavor requestFavor) {
+        Long broadcastId = requestFavor.getBroadcastId();
+        Integer broadcastUserId = requestFavor.getBroadcastUserId();
+        Integer favorUserId = requestFavor.getFavorUserId();
+//
+        String rowKey = broadcastUserId + "_"  +favorUserId + ":" +  broadcastId;
+//
+        log.info("rowKey : {}", rowKey);
 
-        String rowKey = broadcastUserId + "" + behaviorEntity.getUserId() + behaviorEntity.getBroadcastId();
+//        根据 rowKey 查询亲密度
+        Result hBaseIntimacy = HBaseUtil.getRow(HBaseConstant.HBASE_BRO_TABLE, rowKey);
+
+//        获取亲密度
+        String intimacy = Bytes.toString(
+                hBaseIntimacy.getValue(Bytes.toBytes("dd"), Bytes.toBytes("intimacy"))
+        );
+
+//        获取总亲密度
+        String sumIntimacy = Bytes.toString(
+                hBaseIntimacy.getValue(Bytes.toBytes("dd"), Bytes.toBytes("sumIntimacy")));
+
+        if(null == intimacy){
+//            在 dd 列族新增一个属性  默认点赞 5
+            HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, "dd", "intimacy", "5");
+
+//            删除总亲密度这一列
+            HBaseUtil.deleteQualifier(HBaseConstant.HBASE_BRO_TABLE, rowKey,"dd" , "sumIntimacy");
+
+            Integer updateSumIntimacy = Convert.toInt(sumIntimacy) + 5;
+
+//            更新总亲密度
+            HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, "dd", "sumIntimacy", Convert.toStr(updateSumIntimacy));
+        } else {
+            HBaseUtil.deleteQualifier(HBaseConstant.HBASE_BRO_TABLE, rowKey,"dd" , "sumIntimacy");
+            HBaseUtil.deleteQualifier(HBaseConstant.HBASE_BRO_TABLE, rowKey,"dd" , "intimacy");
+
+            Integer updateIntimacy = Convert.toInt(intimacy) + 5;
+            Integer updateSumIntimacy = Convert.toInt(sumIntimacy) + 5;
+
+            HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, "dd", "intimacy", Convert.toStr(updateIntimacy));
+            HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, "dd", "updateSumIntimacy", Convert.toStr(updateSumIntimacy));
+        }
+        return true;
+    }
+
+    @Override
+    public Boolean saveCommentHBaseIntimacy(RequestComment requestComment) {
+        Long broadcastId = requestComment.getBroadcastId();
+        Integer broadcastUserId = requestComment.getBroadcastUserId();
+        Integer commentUserId = requestComment.getCommentUserId();
+
+        String rowKey = broadcastUserId + "_"  +commentUserId + ":" +  broadcastId;
 
         log.info("rowKey : {}", rowKey);
 
+//        根据 rowKey 查询亲密度
+        Result hBaseIntimacy = HBaseUtil.getRow(HBaseConstant.HBASE_BRO_TABLE, rowKey);
+
+//        获取亲密度
+        String intimacy = Bytes.toString(
+                hBaseIntimacy.getValue(Bytes.toBytes("dd"), Bytes.toBytes("intimacy"))
+        );
+
+//        获取总亲密度
+        String sumIntimacy = Bytes.toString(
+                hBaseIntimacy.getValue(Bytes.toBytes("dd"), Bytes.toBytes("sumIntimacy")));
+
+        if(null == intimacy){
+//            在 dd 列族新增一个属性  默认点赞 5
+            HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, "dd", "intimacy", "8");
+
+//            删除总亲密度这一列
+            HBaseUtil.deleteQualifier("hix_bro_recommend", rowKey,"dd" , "sumIntimacy");
+
+            Integer updateSumIntimacy = Convert.toInt(sumIntimacy) + 8;
+
+//            更新总亲密度
+            HBaseUtil.putRow("hix_bro_recommend", rowKey, "dd", "sumIntimacy", Convert.toStr(updateSumIntimacy));
+        }
         return true;
     }
 }
