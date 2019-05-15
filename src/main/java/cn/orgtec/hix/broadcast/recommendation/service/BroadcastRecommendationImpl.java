@@ -57,16 +57,14 @@ public class BroadcastRecommendationImpl implements BroadcastRecommendation {
                 broRowKeyMap.put(Convert.toLong(new String(broId)), Convert.toStr(new String(r.getRow())));
             }
 
-            TreeMap<Long, Long> sortMap = MapUtil.sort(broTimeMap);
+            Map<Long ,Long > descKeyResult = new LinkedHashMap<>();
+            broTimeMap.entrySet().stream()
+                    .sorted(Map.Entry.<Long, Long>comparingByKey()
+                            .reversed()).forEachOrdered(e -> broTimeMap.put(e.getKey(), e.getValue()));
 
-            NavigableMap<Long, Long> longNavigableMap = sortMap.descendingMap();
-
-//            时间倒序排列后的 map
-            Set<Long> keys = longNavigableMap.keySet();
             List<Long> recommendBroadcastIds = new ArrayList<>();
-            for (Long key : keys){
-                recommendBroadcastIds.add(longNavigableMap.get(key));
-            }
+
+            descKeyResult.forEach((k , bid ) -> recommendBroadcastIds.add(bid));
 
             log.info("recommendBroadcastIds.size() : {}" ,recommendBroadcastIds.size());
             if (!CollUtil.isEmpty(recommendBroadcastIds)){
@@ -90,7 +88,9 @@ public class BroadcastRecommendationImpl implements BroadcastRecommendation {
                     int size = broadcastIds.size();
 
                     for (int i = 0 ; i < 10 - size ; i ++){
-                        broadcastIds.add(idsByIntimacy.get(i));
+                        if ( ! broadcastIds.contains(idsByIntimacy.get(i))) {
+                            broadcastIds.add(idsByIntimacy.get(i));
+                        }
                     }
                     return broadcastIds;
                 }
@@ -99,10 +99,12 @@ public class BroadcastRecommendationImpl implements BroadcastRecommendation {
                 List<Long> idsByIntimacy = BroadcastRecommendUtil.getBroIdsByIntimacy(userId);
                 System.out.println("idsByIntimacy.size = " + idsByIntimacy.size());
                 for (int i = 0 ; i < 10  ; i ++){
-                    broadcastIds.add(idsByIntimacy.get(i));
+                  if ( ! broadcastIds.contains(idsByIntimacy.get(i))) {
+                      broadcastIds.add(idsByIntimacy.get(i));
+                  }
                 }
 
-                return broadcastIds;
+                return  broadcastIds;
             }
         } catch (IOException e) {
             e.printStackTrace();

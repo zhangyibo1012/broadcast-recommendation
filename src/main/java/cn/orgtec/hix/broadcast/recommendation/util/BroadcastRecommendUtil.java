@@ -15,9 +15,10 @@ import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 广播推荐工具类
@@ -172,12 +173,31 @@ public class BroadcastRecommendUtil {
         intimacyBroId.put(5L, 100L);
 
 
-        Map<Long ,Long > result = new LinkedHashMap<>();
+//        根据 value 倒序
+        Map<Long ,Long > descValueresult = new LinkedHashMap<>();
         intimacyBroId.entrySet().stream()
                 .sorted(Map.Entry.<Long, Long>comparingByValue()
-                        .reversed()).forEachOrdered(e -> result.put(e.getKey(), e.getValue()));
+                        .reversed()).forEachOrdered(e -> descValueresult.put(e.getKey(), e.getValue()));
 
-        result.forEach((k , v ) -> System.out.println("k = " + k  + "v" + v));
+        descValueresult.forEach((k , v ) -> System.out.println("k = " + k  + "v" + v));
 
+        System.out.println("==============================================" );
+
+//        根据 key 倒序
+        Map<Long ,Long > descKeyresult = new LinkedHashMap<>();
+        intimacyBroId.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByKey()
+                        .reversed()).forEachOrdered(e -> descKeyresult.put(e.getKey(), e.getValue()));
+        descKeyresult.forEach((k , v ) -> System.out.println("k = " + k  + "v" + v));
+
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(1);
+        list.add(2);
+        list.add(2);
+        list.add(3);
+        System.out.println("list = " + list);
+        ArrayList<Integer> distinct = CollUtil.distinct(list);
+        System.out.println("distinct = " + distinct);
     }
 }
