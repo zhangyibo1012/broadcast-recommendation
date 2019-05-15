@@ -62,9 +62,8 @@ public class HBaseUtil {
                 return false;
             }
 
-//            创建
+//            创建表描述器
             HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(tableName));
-            System.out.println(tableDescriptor);
             Arrays.asList(cfs).forEach(cf -> {
                 HColumnDescriptor columnDescriptor = new HColumnDescriptor(cf);
                 columnDescriptor.setMaxVersions(10);

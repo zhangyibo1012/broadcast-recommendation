@@ -49,7 +49,27 @@ public interface HBaseConstant {
         Integer updateSumIntimacy = Convert.toInt(sumIntimacy) + dynamicIntimacy;
 
         HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, HBaseConstant.HBASE_BRO_CF_DD, "intimacy", Convert.toStr(updateIntimacy));
-        HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, HBaseConstant.HBASE_BRO_CF_DD, "updateSumIntimacy", Convert.toStr(updateSumIntimacy));
+        HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, HBaseConstant.HBASE_BRO_CF_DD, "sumIntimacy", Convert.toStr(updateSumIntimacy));
+    }
+
+    /**
+     * 保存亲密度
+     *
+     * @param rowKey      主键
+     * @param sumIntimacy
+     * @param dynamicIntimacy
+     */
+    static void saveSumIntimacy(String rowKey ,Integer sumIntimacy ,Integer dynamicIntimacy){
+  //            在 dd 列族新增一个属性  默认打赏增加 10
+        HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, HBaseConstant.HBASE_BRO_CF_DD, "intimacy", dynamicIntimacy + "");
+
+//            删除总亲密度这一列
+        HBaseUtil.deleteQualifier(HBaseConstant.HBASE_BRO_TABLE, rowKey, HBaseConstant.HBASE_BRO_CF_DD, "sumIntimacy");
+
+        Integer updateSumIntimacy = Convert.toInt(sumIntimacy) + dynamicIntimacy;
+
+//            更新总亲密度
+        HBaseUtil.putRow(HBaseConstant.HBASE_BRO_TABLE, rowKey, HBaseConstant.HBASE_BRO_CF_DD, "sumIntimacy", Convert.toStr(updateSumIntimacy));
     }
 
     /**
