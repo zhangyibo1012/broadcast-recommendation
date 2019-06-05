@@ -16,6 +16,6 @@ public class InitHBaseTable implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        HBaseUtil.createTable(HBaseConstant.HBASE_BRO_TABLE, new String[]{HBaseConstant.HBASE_BRO_CF_SD , HBaseConstant.HBASE_BRO_CF_DD});
+//        HBaseUtil.createTable(HBaseConstant.HBASE_BRO_TABLE, new String[]{HBaseConstant.HBASE_BRO_CF_SD , HBaseConstant.HBASE_BRO_CF_DD});
     }
 }
